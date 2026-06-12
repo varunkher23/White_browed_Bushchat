@@ -24,4 +24,25 @@ shrubs <- read.csv("habitat_23-24/branch-2__vegetation-shrubs.csv") %>%
             volume_1ha = sum(volume, na.rm =T) * 2.5)
 
 understory <- read.csv("habitat_23-24/branch-5__understory.csv") %>%
-  clean_names()
+  clean_names()%>%
+  mutate(
+    midpoint_height_class = case_when(
+      x31_hight_class == "1-20" ~ 10,
+      x31_hight_class == "21-40" ~ 30,
+      x31_hight_class == "41-60" ~ 50,
+      x31_hight_class == "61-80" ~ 70,
+      x31_hight_class == "81-100" ~ 90,
+      x31_hight_class == "101-120" ~ 110,
+      x31_hight_class == "121-140" ~ 130,
+      x31_hight_class == "141-160" ~ 150,
+      x31_hight_class == "161-180" ~ 170,
+      x31_hight_class == "181-200" ~ 190
+    ),
+    x28_species = gsub(" ", "_", gsub("\"", "", sub("_.*", "", x28_species)))
+  )%>%
+  group_by(ec5_branch_owner_uuid, x27_quadrat, x28_species, midpoint_height_class) %>%
+  summarise(
+    mean_cover = mean(as.numeric(sub("-.*", "", x32_percent_cover_cla)), na.rm = TRUE),
+    n_quadrats = n(),
+    .groups = "drop"
+  )
